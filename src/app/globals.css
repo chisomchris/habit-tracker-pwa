@@ -1,26 +1,210 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --background: #f8f8fb;
+  --card: #ffffff;
+  --card-muted: #f9fafe;
+
+  /* Text */
+  --foreground: #0c0e16;
+  --muted-foreground: #858bb2;
+  --subtle-foreground: #888eb0;
+
+  /* Borders */
+  --border: #dfe3fa;
+  --border-hover: #7c5dfa;
+
+  /* Brand */
+  --primary: #7c5dfa;
+  --primary-hover: #9277ff;
+  --primary-foreground: #ffffff;
+
+  --secondary: #ec5757;
+  --secondary-hover: #ff9797;
+  --secondary-foreground: #ffffff;
+
+  --sidebar: #373b53;
+
+  /* Status States (RGB for opacity support) */
+  --draft: 55, 59, 83;
+  --pending: 255, 143, 0;
+  --paid: 51, 214, 159;
+}
+
+.dark {
+  --background: #141625;
+  --card: #1e2139;
+  --card-muted: #252945;
+
+  --foreground: #ffffff;
+  --muted-foreground: #ffffff;
+  --subtle-foreground: #dfe3fa;
+
+  --border: #252945;
+
+  /* Draft status changes color in dark mode per Figma */
+  --draft: 223, 227, 250;
+  --sidebar: var(--card);
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-muted: var(--card-muted);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  /* Status Colors with Alpha Support */
+  --color-draft: rgb(var(--draft));
+  --color-pending: rgb(var(--pending));
+  --color-paid: rgb(var(--paid));
+  /* Extra Colors */
+  --color-sidebar: var(--sidebar);
+
+  --font-spartan: var(--font-league-spartans);
+
+  /* Typography Variables */
+  --font-size-h-l: 36px;
+  --line-height-h-l: 33px;
+  --letter-spacing-h-l: -1px;
+
+  --font-size-h-m: 24px;
+  --line-height-h-m: 22px;
+  --letter-spacing-h-m: -0.75px;
+
+  --font-size-h-s: 15px;
+  --line-height-h-s: 24px;
+  --letter-spacing-h-s: -0.25px;
+  --line-height-h-s-var: 15px;
+
+  --font-size-body: 13px;
+  --line-height-body: 18px;
+  --letter-spacing-body: -0.1px;
+
+  --line-height-body-var: 15px;
+  --letter-spacing-body-var: -0.25px;
+}
+@layer base {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible {
+    @apply outline-none ring-2 ring-primary/75 ring-offset-2;
+  }
+
+  button,
+  a {
+    cursor: pointer;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-league-spartans), sans-serif;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    letter-spacing: var(--letter-spacing-body);
+    font-weight: 500;
+  }
+
+  h1 {
+    font-size: var(--font-size-h-l);
+    line-height: var(--line-height-h-l);
+    letter-spacing: var(--letter-spacing-h-l);
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: var(--font-size-h-m);
+    line-height: var(--line-height-h-m);
+    letter-spacing: var(--letter-spacing-h-m);
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: var(--font-size-h-s);
+    line-height: var(--line-height-h-s);
+    letter-spacing: var(--letter-spacing-h-s);
+    font-weight: 700;
+  }
+
+  h4 {
+    font-size: var(--font-size-h-s);
+    line-height: var(--line-height-h-s-var);
+    letter-spacing: var(--letter-spacing-h-s);
+    font-weight: 700;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility wrapper {
+  max-width: 1024px;
+  width: 96%;
+  margin: 0 auto;
+}
+
+/* Unified Typography Utilities */
+@utility text-heading-l {
+  font-size: var(--font-size-h-l);
+  line-height: var(--line-height-h-l);
+  letter-spacing: var(--letter-spacing-h-l);
+  font-weight: 700;
+}
+
+@utility text-heading-m {
+  font-size: var(--font-size-h-m);
+  line-height: var(--line-height-h-m);
+  letter-spacing: var(--letter-spacing-h-m);
+  font-weight: 700;
+}
+
+@utility text-heading-s {
+  font-size: var(--font-size-h-s);
+  line-height: var(--line-height-h-s);
+  letter-spacing: var(--letter-spacing-h-s);
+  font-weight: 700;
+}
+
+@utility text-heading-s-var {
+  font-size: var(--font-size-h-s);
+  line-height: var(--line-height-h-s-var);
+  letter-spacing: var(--letter-spacing-h-s);
+  font-weight: 700;
+}
+
+@utility text-base-body {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  letter-spacing: var(--letter-spacing-body);
+  font-weight: 500;
+}
+
+@utility text-body-variant {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body-var);
+  letter-spacing: var(--letter-spacing-body-var);
+  font-weight: 500;
 }
