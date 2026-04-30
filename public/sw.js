@@ -1,7 +1,20 @@
-const CACHE_NAME = "habit-tracker-v1.0";
+const CACHE_NAME = "habit-tracker-1.0";
 const OFFLINE_FALLBACK_URL = "/";
 const ASSETS_TO_CACHE = [
-  OFFLINE_FALLBACK_URL,
+  "/",
+  "/index.html",
+
+  "/dashboard",
+  "/dashboard/index.html",
+
+  "/login",
+  "/login/index.html",
+
+  "/signup",
+  "/signup/index.html",
+
+  "/manifest.json",
+  "/favicon.ico",
   "/manifest.json",
   "/icons/android-chrome-192x192.png",
   "/icons/android-chrome-512x512.png",
@@ -10,65 +23,95 @@ const ASSETS_TO_CACHE = [
   "/icons/favicon-16x16.png",
 ];
 
+// Install: minimal shell only
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)),
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    }),
   );
   self.skipWaiting();
 });
 
-// ACTIVATE: Clean up old caches when CACHE_NAME changes
+// Activate: clean old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log("Service Worker: Clearing Old Cache");
-            return caches.delete(cache);
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         }),
-      );
-    }),
+      ),
+    ),
   );
-  return self.clients.claim();
+  self.clients.claim();
 });
 
-// FETCH: Intercept requests
+// Fetch handler
 self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  if (event.request.method !== "GET" || url.origin !== self.location.origin)
-    return;
+  if (event.request.method !== "GET") return;
 
+  const url = new URL(event.request.url);
+
+  // 🔹 1. Handle navigation (HTML pages)
+  if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+
+  // ✅ Handle navigation (pages)
   if (event.request.mode === "navigate") {
+    const cleanUrl = url.origin + url.pathname; // strip query
+
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, response.clone());
-            return response;
+          const copy = response.clone();
+
+          caches.open(CACHE_NAME).then((cache) => {
+            // store WITHOUT query params
+            cache.put(cleanUrl, copy);
           });
+
+          return response;
         })
         .catch(() => {
-          return caches.match(event.request).then((cachedResponse) => {
-            return cachedResponse || caches.match(OFFLINE_FALLBACK_URL);
-          });
+          return caches
+            .match(cleanUrl)
+            .then((res) => res || caches.match("/index.html"));
         }),
+    );
+
+    return;
+  }
+
+  // 🔹 2. Static assets (_next, images, etc.)
+  if (
+    url.pathname.startsWith("/_next/") ||
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif|webp|ico|woff2?)$/)
+  ) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return (
+          cached ||
+          fetch(event.request).then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, copy);
+            });
+            return response;
+          })
+        );
+      }),
     );
     return;
   }
 
+  // 🔹 3. Default: try cache first
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        const fetchPromise = fetch(event.request).then((response) => {
-          if (response.status === 200) {
-            cache.put(event.request, response.clone());
-          }
-          return response;
-        });
-        return cachedResponse || fetchPromise;
-      });
-    }),
+    caches
+      .match(event.request)
+      .then((cached) => cached || fetch(event.request)),
   );
 });
