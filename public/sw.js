@@ -1,4 +1,4 @@
-const CACHE_NAME = "habit-tracker-v1";
+const CACHE_NAME = "habit-tracker-v1.0";
 const OFFLINE_FALLBACK_URL = "/";
 const ASSETS_TO_CACHE = [
   OFFLINE_FALLBACK_URL,

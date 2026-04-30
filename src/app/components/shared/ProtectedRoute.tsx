@@ -15,7 +15,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (session === undefined) {
     return (
       <main className="grid h-screen place-items-center">
-        <div className="animate-pulse">Loading auth state...</div>
+        <div className="animate-pulse">Loading...</div>
       </main>
     );
   }
