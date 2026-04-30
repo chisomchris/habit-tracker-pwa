@@ -3,7 +3,7 @@ import { Dashboard } from "./content";
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="animate-pulse">Loading ...</div>}>
+    <Suspense fallback={<></>}>
       <Dashboard />
     </Suspense>
   );
