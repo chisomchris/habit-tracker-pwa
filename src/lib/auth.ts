@@ -13,7 +13,9 @@ export function signup(email: string, password: string) {
   const user = getUser(email, "email");
   if (user) throw Error("User already exists");
   const newUser = createUser({ email, password });
-  createSession(newUser.id, newUser.email);
+  if (newUser) {
+    createSession(newUser.id, newUser.email);
+  }
   return true;
 }
 

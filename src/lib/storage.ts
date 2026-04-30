@@ -6,20 +6,24 @@ import { generateUUID } from "./utils";
 
 export function createUser(user: Pick<User, "email" | "password">) {
   const users = usersStore.getSnapshot();
-  const newUser: User = {
-    id: generateUUID(),
-    email: user.email,
-    password: user.password,
-    createdAt: new Date().toISOString(),
-  };
-  usersStore.set([...users, newUser]);
-  return newUser;
+  if (users) {
+    const newUser: User = {
+      id: generateUUID(),
+      email: user.email,
+      password: user.password,
+      createdAt: new Date().toISOString(),
+    };
+    usersStore.set([...users, newUser]);
+    return newUser;
+  }
 }
 
 export function getUser(value: string, key: "id" | "email" = "id") {
   const users = usersStore.getSnapshot();
-  const user = users.find((user) => user[key] === value);
-  return user;
+  if (users) {
+    const user = users.find((user) => user[key] === value);
+    return user;
+  }
 }
 
 export function createSession(
@@ -35,17 +39,19 @@ export function createHabit(
 ) {
   const user = getUser(userId);
   if (!user) throw Error("Invalid User Id");
+
   const currentHabits = habitsStore.getSnapshot();
+  if (currentHabits) {
+    const newHabit: Habit = {
+      ...habit,
+      id: generateUUID(),
+      userId,
+      createdAt: new Date().toISOString(),
+      completions: [],
+    };
 
-  const newHabit: Habit = {
-    ...habit,
-    id: generateUUID(),
-    userId,
-    createdAt: new Date().toISOString(),
-    completions: [],
-  };
-
-  habitsStore.set([newHabit, ...currentHabits]);
+    habitsStore.set([newHabit, ...currentHabits]);
+  }
 }
 
 export function updateHabit(
@@ -55,25 +61,26 @@ export function updateHabit(
   >,
 ) {
   const currentHabits = habitsStore.getSnapshot();
+  if (currentHabits) {
+    const habitExists = currentHabits.some((h) => h.id === habitId);
+    if (!habitExists) throw Error("Habit not found");
 
-  const habitExists = currentHabits.some((h) => h.id === habitId);
-  if (!habitExists) throw Error("Habit not found");
+    const updatedHabits = currentHabits.map((habit) => {
+      if (habit.id === habitId) {
+        return {
+          ...habit,
+          ...updates,
+        };
+      }
+      return habit;
+    });
 
-  const updatedHabits = currentHabits.map((habit) => {
-    if (habit.id === habitId) {
-      return {
-        ...habit,
-        ...updates,
-      };
-    }
-    return habit;
-  });
-
-  habitsStore.set(updatedHabits);
+    habitsStore.set(updatedHabits);
+  }
 }
 
 export function deleteHabit(habitId: string) {
-  const currentHabits = habitsStore.getSnapshot();
+  const currentHabits = habitsStore.getSnapshot() ?? [];
 
   const habitExists = currentHabits.some((h) => h.id === habitId);
   if (!habitExists) throw Error("Habit not found");
